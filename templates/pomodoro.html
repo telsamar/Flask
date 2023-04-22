@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таймер помодоро</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #timer-container {
+            display: none;
+        }
+        #timer {
+            font-size: 48px;
+        }
+        button {
+            display: block;
+            margin-top: 20px;
+        }
+        #stopSoundButton {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">Старт</button>
+    <div id="timer-container">
+        <div id="timer">25:00</div>
+        <button id="stopSoundButton">Выключить звук</button>
+    </div>
+    <script>
+        const startButton = document.getElementById('startButton');
+        const timerContainer = document.getElementById('timer-container');
+        const timerDisplay = document.getElementById('timer');
+        const stopSoundButton = document.getElementById('stopSoundButton');
+
+        const alertSound = new Howl({
+            src: ['/static/alert.mp3'],
+            autoplay: false,
+            onloaderror: function (id, error) {
+                console.error('Sound load error:', error);
+            }
+        });
+
+        let timeRemaining = 25 * 60;
+        let isBreak = false;
+        let flashInterval;
+
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function flashScreen() {
+            if (document.body.style.backgroundColor === 'black') {
+                document.body.style.backgroundColor = 'white';
+            } else {
+                document.body.style.backgroundColor = 'black';
+            }
+        }
+
+        function stopSound() {
+            alertSound.stop();
+            clearInterval(flashInterval);
+            document.body.style.backgroundColor = 'white';
+            stopSoundButton.style.display = 'none';
+        }
+
+        function startTimer() {
+            timerContainer.style.display = 'block';
+            startButton.style.display = 'none';
+            const interval = setInterval(() => {
+                timeRemaining--;
+
+                if (timeRemaining < 0) {
+                    clearInterval(interval);
+                    alertSound.play();
+                    flashInterval = setInterval(flashScreen, 500);
+                    stopSoundButton.style.display = 'block';
+                    } else {
+                    updateTimer();
+                }
+            }, 1000);
+        }
+
+        startButton.addEventListener('click', startTimer);
+        stopSoundButton.addEventListener('click', stopSound);
+    </script>
+</body>
+</html>
